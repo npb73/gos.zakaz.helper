@@ -1,8 +1,8 @@
-import { AppShell, Text, Container, Title, Textarea, Button, Group, Paper, Loader, Card, Checkbox, Badge, Stack, Grid, Select, Modal, ActionIcon, useMantineColorScheme } from '@mantine/core'
+import { AppShell, Text, Container, Title, Textarea, Button, Group, Paper, Loader, Card, Checkbox, Badge, Stack, Grid, Select, Modal, ActionIcon, useMantineColorScheme, useMantineTheme } from '@mantine/core'
 import { useState, useEffect, useRef } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import pdfFile from '../assets/rick_roll.pdf'
-import { IconSun, IconMoon } from '@tabler/icons-react'
+import { IconSun, IconMoon, IconSend } from '@tabler/icons-react'
 
 interface CardItem {
   id: string
@@ -16,6 +16,7 @@ type SortType = 'price-asc' | 'price-desc' | 'percentage-asc' | 'percentage-desc
 
 function App() {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme()
+  const theme = useMantineTheme()
   const [query, setQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [cards, setCards] = useState<CardItem[]>([])
@@ -179,7 +180,7 @@ function App() {
             </svg>
             <Stack gap={0}>
               <Title order={2}>САФТЗ</Title>
-              <Text size="sm" c="dimmed">Система Анализа и Формирования Технического Задания</Text>
+              <Text size="sm" c="dimmed" visibleFrom="sm">Система Анализа и Формирования Технического Задания</Text>
             </Stack>
           </Group>
           <ActionIcon
@@ -213,9 +214,19 @@ function App() {
                   disabled={!query.trim() || isLoading || isGeneratingMore}
                   variant="filled"
                   onClick={handleSubmit}
+                  visibleFrom="sm"
                 >
                   Отправить
                 </Button>
+                <ActionIcon
+                  size="lg"
+                  variant="filled"
+                  disabled={!query.trim() || isLoading || isGeneratingMore}
+                  onClick={handleSubmit}
+                  hiddenFrom="sm"
+                >
+                  <IconSend size={20} />
+                </ActionIcon>
               </Group>
             </Paper>
 
