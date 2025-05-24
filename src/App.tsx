@@ -1,4 +1,4 @@
-import { AppShell, Text, Container, Title, Textarea, Button, Group, Paper, Loader, Card, Checkbox, Badge, Stack, Grid, Select, Modal, ActionIcon, useMantineColorScheme, useMantineTheme } from '@mantine/core'
+import { AppShell, Text, Container, Title, Textarea, Button, Group, Paper, Loader, Card, Checkbox, Badge, Stack, Grid, Select, Modal, ActionIcon, useMantineColorScheme } from '@mantine/core'
 import { useState, useEffect, useRef } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import pdfFile from '../assets/rick_roll.pdf'
@@ -16,7 +16,6 @@ type SortType = 'price-asc' | 'price-desc' | 'percentage-asc' | 'percentage-desc
 
 function App() {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme()
-  const theme = useMantineTheme()
   const [query, setQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [cards, setCards] = useState<CardItem[]>([])
