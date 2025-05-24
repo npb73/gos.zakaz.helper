@@ -2,7 +2,7 @@ import { AppShell, Text, Container, Title, Textarea, Button, Group, Paper, Loade
 import { useState, useEffect, useRef } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import pdfFile from '../assets/rick_roll.pdf'
-import { IconSun, IconMoon, IconSend, IconRocket } from '@tabler/icons-react'
+import { IconSun, IconMoon, IconRocket } from '@tabler/icons-react'
 
 interface CardItem {
   id: string
@@ -27,7 +27,7 @@ function App() {
   const [tzFileUrl, setTzFileUrl] = useState<string | null>(null)
   const [isTurboMode, setIsTurboMode] = useState(false)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-
+s
   const getPercentageColor = (percentage: number) => {
     if (percentage < 40) return 'red'
     if (percentage < 70) return 'yellow'
