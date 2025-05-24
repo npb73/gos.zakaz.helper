@@ -1,8 +1,8 @@
-import { AppShell, Text, Container, Title, Textarea, Button, Group, Paper, Loader, Card, Checkbox, Badge, Stack, Grid, Select, Modal, ActionIcon, useMantineColorScheme } from '@mantine/core'
+import { AppShell, Text, Container, Title, Textarea, Button, Group, Paper, Loader, Card, Checkbox, Badge, Stack, Grid, Select, Modal, ActionIcon, useMantineColorScheme, Switch } from '@mantine/core'
 import { useState, useEffect, useRef } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import pdfFile from '../assets/rick_roll.pdf'
-import { IconSun, IconMoon, IconSend } from '@tabler/icons-react'
+import { IconSun, IconMoon, IconSend, IconRocket } from '@tabler/icons-react'
 
 interface CardItem {
   id: string
@@ -22,10 +22,10 @@ function App() {
   const [viewedCount, setViewedCount] = useState(0)
   const [sortBy, setSortBy] = useState<SortType>('price-desc')
   const [isGeneratingMore, setIsGeneratingMore] = useState(false)
-  const [isPaused, setIsPaused] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isGeneratingTZ, setIsGeneratingTZ] = useState(false)
   const [tzFileUrl, setTzFileUrl] = useState<string | null>(null)
+  const [isTurboMode, setIsTurboMode] = useState(false)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const getPercentageColor = (percentage: number) => {
@@ -55,16 +55,15 @@ function App() {
     const addNextCard = () => {
       if (currentIndex < count) {
         const delay = Math.floor(Math.random() * 12000) + 3000
+        const turboDelay = isTurboMode ? delay / 10 : delay
         timeoutRef.current = setTimeout(() => {
-          if (!isPaused) {
-            const newCard = generateCard()
-            setCards(prev => [...prev, newCard])
-            const increment = Math.floor(Math.random() * 5) + 1
-            setViewedCount(prev => prev + increment)
-            currentIndex++
-            addNextCard()
-          }
-        }, delay)
+          const newCard = generateCard()
+          setCards(prev => [...prev, newCard])
+          const increment = Math.floor(Math.random() * 5) + 1
+          setViewedCount(prev => prev + increment)
+          currentIndex++
+          addNextCard()
+        }, turboDelay)
       } else {
         setIsLoading(false)
         setIsGeneratingMore(false)
@@ -78,27 +77,12 @@ function App() {
     setIsLoading(true)
     setCards([])
     setViewedCount(0)
-    setIsPaused(false)
     addCardsWithDelay(5)
   }
 
   const handleGenerateMore = () => {
     setIsGeneratingMore(true)
-    setIsPaused(false)
     addCardsWithDelay(5)
-  }
-
-  const handlePause = () => {
-    setIsPaused(!isPaused)
-    if (isPaused) {
-      // Если разпаузили, продолжаем генерацию
-      addCardsWithDelay(5 - cards.length)
-    } else {
-      // Если поставили на паузу, очищаем таймаут
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
   }
 
   const handleCheckboxChange = (id: string) => {
@@ -182,53 +166,35 @@ function App() {
               <Text size="sm" c="dimmed" visibleFrom="sm">Система Анализа и Формирования Технического Задания</Text>
             </Stack>
           </Group>
-          <ActionIcon
-            variant="default"
-            size="lg"
-            onClick={() => toggleColorScheme()}
-            aria-label="Toggle color scheme"
-          >
-            {colorScheme === 'dark' ? <IconSun size={20} /> : <IconMoon size={20} />}
-          </ActionIcon>
+          <Group>
+            <Switch
+              size="md"
+              label="Турбо режим"
+              checked={isTurboMode}
+              onChange={(event) => setIsTurboMode(event.currentTarget.checked)}
+              thumbIcon={
+                isTurboMode ? (
+                  <IconRocket size={12} stroke={2.5} color="var(--mantine-color-white)" />
+                ) : (
+                  <IconRocket size={12} stroke={2.5} color="var(--mantine-color-blue-6)" />
+                )
+              }
+            />
+            <ActionIcon
+              variant="default"
+              size="lg"
+              onClick={() => toggleColorScheme()}
+              aria-label="Toggle color scheme"
+            >
+              {colorScheme === 'dark' ? <IconSun size={20} /> : <IconMoon size={20} />}
+            </ActionIcon>
+          </Group>
         </Container>
       </AppShell.Header>
 
       <AppShell.Main>
-        <Container size="lg" py="xl">
-          <Stack>
-            <Paper shadow="sm" p="md" withBorder>
-              <Group align="flex-start">
-                <Textarea
-                  placeholder="Введите ваш запрос..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  style={{ flex: 1 }}
-                  size="lg"
-                  autosize
-                  minRows={1}
-                  maxRows={10}
-                />
-                <Button 
-                  size="lg" 
-                  disabled={!query.trim() || isLoading || isGeneratingMore}
-                  variant="filled"
-                  onClick={handleSubmit}
-                  visibleFrom="sm"
-                >
-                  Отправить
-                </Button>
-                <ActionIcon
-                  size="lg"
-                  variant="filled"
-                  disabled={!query.trim() || isLoading || isGeneratingMore}
-                  onClick={handleSubmit}
-                  hiddenFrom="sm"
-                >
-                  <IconSend size={20} />
-                </ActionIcon>
-              </Group>
-            </Paper>
-
+        <Container size="lg" py="xl" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 60px)' }}>
+          <Stack style={{ flex: 1, overflow: 'hidden' }}>
             <Paper shadow="sm" p="md" withBorder>
               <Group justify="space-between">
                 <Group>
@@ -246,83 +212,101 @@ function App() {
                     disabled={!cards.length}
                   />
                 </Group>
-                <Button
-                  variant="filled"
-                  disabled={!cards.some(card => card.checked)}
-                  onClick={handleGenerateTZ}
-                >
-                  Сформировать ТЗ
-                </Button>
               </Group>
             </Paper>
 
-            <Group justify="center" mt="xl" gap="md">
+            <Group justify="center" gap="md">
               {(isLoading || isGeneratingMore) ? (
                 <>
-                  {!isPaused && <Loader size="lg" />}
+                  <Loader size="lg" />
                   <Text size="lg">Просмотрено {viewedCount} {getRecordWord(viewedCount)}</Text>
-                  <Button 
-                    variant="light" 
-                    color={isPaused ? 'green' : 'red'}
-                    onClick={handlePause}
-                  >
-                    {isPaused ? 'Продолжить' : 'Пауза'}
-                  </Button>
                 </>
-              ) : cards.length > 0 && (
-                <Button 
-                  size="lg" 
-                  variant="light"
-                  onClick={handleGenerateMore}
-                >
-                  Продолжить поиск
-                </Button>
-              )}
+              ) : null}
             </Group>
 
-            <Grid mt="xl">
-              {sortedCards.map((card) => (
-                <Grid.Col key={card.id} span={{ base: 12, sm: 6, md: 4, lg: 3, xl: 2.4 }}>
-                  <Card 
-                    shadow="sm" 
-                    p="lg" 
-                    withBorder 
-                    h="100%"
-                    styles={{
-                      root: {
-                        borderColor: card.checked ? 'var(--mantine-color-blue-6)' : undefined,
-                        transition: 'border-color 0.2s ease'
-                      }
-                    }}
-                  >
-                    <Stack>
-                      <Group justify="space-between">
-                        <Badge 
-                          size="lg" 
-                          variant="light"
-                          color={getPercentageColor(card.percentage)}
-                        >
-                          {card.percentage}%
-                        </Badge>
-                        <Checkbox
-                          checked={card.checked}
-                          onChange={() => handleCheckboxChange(card.id)}
-                        />
-                      </Group>
-                      <Stack gap="xs">
-                        <Title order={3}>
-                          {formatPrice(card.price)}
-                        </Title>
-                        <Text>{card.description}</Text>
-                        <Button variant="subtle" size="sm" fullWidth>
-                          Перейти
-                        </Button>
+            <div style={{ flex: 1, overflow: 'auto', padding: 'var(--mantine-spacing-md) 0' }}>
+              <Grid>
+                {sortedCards.map((card) => (
+                  <Grid.Col key={card.id} span={{ base: 12, sm: 6, md: 4, lg: 3, xl: 2.4 }}>
+                    <Card 
+                      shadow="sm" 
+                      p="lg" 
+                      withBorder 
+                      h="100%"
+                      styles={{
+                        root: {
+                          borderColor: card.checked ? 'var(--mantine-color-blue-6)' : undefined,
+                          transition: 'border-color 0.2s ease'
+                        }
+                      }}
+                    >
+                      <Stack>
+                        <Group justify="space-between">
+                          <Badge 
+                            size="lg" 
+                            variant="light"
+                            color={getPercentageColor(card.percentage)}
+                          >
+                            {card.percentage}%
+                          </Badge>
+                          <Checkbox
+                            checked={card.checked}
+                            onChange={() => handleCheckboxChange(card.id)}
+                          />
+                        </Group>
+                        <Stack gap="xs">
+                          <Title order={3}>
+                            {formatPrice(card.price)}
+                          </Title>
+                          <Text>{card.description}</Text>
+                          <Button variant="subtle" size="sm" fullWidth>
+                            Перейти
+                          </Button>
+                        </Stack>
                       </Stack>
-                    </Stack>
-                  </Card>
-                </Grid.Col>
-              ))}
-            </Grid>
+                    </Card>
+                  </Grid.Col>
+                ))}
+              </Grid>
+            </div>
+
+            <Stack gap="md" style={{ position: 'relative' }}>
+              {cards.length > 0 && !isLoading && !isGeneratingMore && (
+                <Button 
+                  size="lg" 
+                  variant={cards.some(card => card.checked) ? "filled" : "light"}
+                  onClick={cards.some(card => card.checked) ? handleGenerateTZ : handleGenerateMore}
+                  style={{
+                    position: 'absolute',
+                    top: '-60px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 100
+                  }}
+                >
+                  {cards.some(card => card.checked) ? 'Сформировать ТЗ' : 'Продолжить поиск'}
+                </Button>
+              )}
+              <Paper shadow="sm" p="md" withBorder>
+                <Textarea
+                  placeholder="Введите ваш запрос..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      if (query.trim() && !isLoading && !isGeneratingMore) {
+                        handleSubmit()
+                      }
+                    }
+                  }}
+                  size="lg"
+                  autosize
+                  minRows={1}
+                  maxRows={10}
+                />
+              </Paper>
+            </Stack>
           </Stack>
         </Container>
       </AppShell.Main>
