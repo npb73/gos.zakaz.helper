@@ -27,7 +27,7 @@ function App() {
   const [tzFileUrl, setTzFileUrl] = useState<string | null>(null)
   const [isTurboMode, setIsTurboMode] = useState(false)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-s
+
   const getPercentageColor = (percentage: number) => {
     if (percentage < 40) return 'red'
     if (percentage < 70) return 'yellow'
