@@ -2,7 +2,7 @@ import { AppShell, Text, Container, Title, Textarea, Button, Group, Paper, Loade
 import { useState, useEffect, useRef } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import pdfFile from '../assets/rick_roll.pdf'
-import { IconSun, IconMoon, IconRocket } from '@tabler/icons-react'
+import { IconSun, IconMoon, IconRocket, IconSend } from '@tabler/icons-react'
 
 interface CardItem {
   id: string
@@ -288,23 +288,44 @@ function App() {
                 </Button>
               )}
               <Paper shadow="sm" p="md" withBorder>
-                <Textarea
-                  placeholder="Введите ваш запрос..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
+                <div style={{ position: 'relative' }}>
+                  <Textarea
+                    placeholder="Введите ваш запрос..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        if (query.trim() && !isLoading && !isGeneratingMore) {
+                          handleSubmit()
+                        }
+                      }
+                    }}
+                    size="lg"
+                    autosize
+                    minRows={1}
+                    maxRows={10}
+                  />
+                  <ActionIcon
+                    variant="filled"
+                    color="blue"
+                    size="lg"
+                    onClick={() => {
                       if (query.trim() && !isLoading && !isGeneratingMore) {
                         handleSubmit()
                       }
-                    }
-                  }}
-                  size="lg"
-                  autosize
-                  minRows={1}
-                  maxRows={10}
-                />
+                    }}
+                    disabled={!query.trim() || isLoading || isGeneratingMore}
+                    style={{
+                      position: 'absolute',
+                      bottom: '8px',
+                      right: '8px',
+                      zIndex: 1
+                    }}
+                  >
+                    <IconSend size={20} />
+                  </ActionIcon>
+                </div>
               </Paper>
             </Stack>
           </Stack>
