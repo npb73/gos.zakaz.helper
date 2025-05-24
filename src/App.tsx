@@ -117,6 +117,10 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    document.title = 'САФТЗ'
+  }, [])
+
   const sortedCards = [...cards].sort((a, b) => {
     switch (sortBy) {
       case 'price-asc':
